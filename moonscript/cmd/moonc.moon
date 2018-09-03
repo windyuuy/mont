@@ -38,7 +38,6 @@ parse_file = (path) ->
 -- converts .moon to a .lua path for calcuating compile target
 convert_path = (path) ->
   new_path = path\gsub "%.moon$", ".lua"
-  new_path = new_path\gsub "%.mo$", ".lua"
   if new_path == path
     new_path = path .. ".lua"
   new_path
@@ -79,14 +78,16 @@ compile_file_text = (text, opts={}) ->
 
   if opts.show_parse_tree
     dump = require "moonscript.dump"
-    dump.tree tree
+    print dump.tree tree
     return true
 
   compile_time = if opts.benchmark
     gettime!
 
   if mod = opts.transform_module
-    tree = assert require(mod) tree
+    file = assert loadfile mod
+    fn = assert file!
+    tree = assert fn tree
 
   code, posmap_or_err, err_pos = compile.tree tree
 
