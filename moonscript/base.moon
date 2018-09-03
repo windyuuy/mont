@@ -82,6 +82,7 @@ dofile = (...) ->
 insert_loader = (pos=2) ->
   if not package.moonpath
     package.moonpath = create_moonpath package.path
+    package._MMODE=true
 
   loaders = package.loaders or package.searchers
   for loader in *loaders

@@ -268,5 +268,93 @@ z = a -b
 z = a - b
 z = a- b
 
+--
 
+a={}
+c=a+[]b -- append a,b, keep a not changed
+d=a-[]b -- remove value b
+g=a|[n]b -- insert a,b
+a%%[]b -- remove all b
+a-[n] -- remove key n
+e=a[]+c -- merge a,b
+f=a[+]c -- map +,a,c
+[x]a -- a[x]!
+[x]a(...) -- a[x](...)
+a<-$3,2,$5=4,p=21> -- (n1,n2,n3,n5=4,p=21,...)-> a(n1,n2,n3,2,n5,p,...)
+
+f^v -- (do (repeat r=f(v);v=r if r;break unless r;);v)
+t.^*f -- `f v for v in t
+t.^*.t1 -- f v for v in t for f in t1
+([[.^*].] t t1)
+v^*.t -- f v for f in t
+f*.f2*.t -- 
+<~f1,f2,f3> -- ((...)->f1 f2 f3(...))
+
+t^ipairs.^f -- f(x1,x2) for x1,x2 in ipairs(t)
+t^ipairs.^f.^f2 -- f(x3,x4) for x3,x4 in f(x1,x2) for x1,x2 in ipairs(t)
+[t^ipairs.^f].^f2
+t^ipairs.^<~f,f2> -- {<...>f2(f(...))}(...) for ... in ipairs(t)
+t^ipairs.^f2.^.(ft^ipairs) -- f(x3,x4) for x1,x2 in ipairs(t) for f in ipairs(ft) for x3,x4 in f(x1,x2)
+t^ipairs.^.(tf^ipairs).^.(ft2^ipairs) -- f(x3,x4) for x1,x2 in ipairs(t) for f in ipairs(ft) for x3,x4 in f(x1,x2)
+
+v^<f1^+f2> -- {<x>f1(x),f2(x)}(v)
+f.^f2 -- {<x> f2(v,i) for i,v in f(x)}
+foreach(t,f) -- f(v,i) for i,v in t
+
+t^*<2>f -- f(v,i) for i,v in *t
+t^*{<...>} -- ((v,i)->)(v,i) for v,i in *t
+{<...>} -- ((...)->)
+<f1^f2^f3~> -- (...)-> f1(f2(f3(...)))
+<~f1^f2^f3> -- (...)-> f3(f2(f1(...)))
+f<,$3=23,$4:w,lj> -- ((n1,n2,n3=23)-> f(n1,n2,n3,w,lj))
+v^f -- f(v)
+[x](kke)t -- t[x](kke)
+[](kke)t -- (x)->t[x](kke)
+[]t -- (x)->(...)->t[x](...)
+[x]{
+	a:wlkelk
+	b:
+		lkjefl
+	else:
+		lwkje
+} -- switch x when ...
+[x](kke){} -- (switch x when ...)(kke)
+
+@<-thisco={
+	<data,d>~>{
+		<a,b>
+		<le,wl>~> last_co
+	}~>ctrlv,<sjk,kj> -- 
+}
+
+thisco=(data,d)->
+	ctrlv,{sjk,kj}=coresume(cocreate((a,b)->
+		coyield(last_co,le,wl)
+	))
+last_co=thisco
+coresume(thisco)
+	
+sfew=<x>
 -- cooool
+
+{|print("lwkej")}
+(1-2+3)
+
+-- ParensExp
+ef=(+--welkjf
+1--wej
+2 3
+(233 + 23)
+(- 23 324)
+)
+
+--]]
+
+a^^[]b
+
+~>	cowrap ->
+
+#macro
+#default params
+
+//'a bf c d'// 'a','bf','c','d'

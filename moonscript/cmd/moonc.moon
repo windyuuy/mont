@@ -38,6 +38,7 @@ parse_file = (path) ->
 -- converts .moon to a .lua path for calcuating compile target
 convert_path = (path) ->
   new_path = path\gsub "%.moon$", ".lua"
+  new_path = new_path\gsub "%.mo$", ".lua"
   if new_path == path
     new_path = path .. ".lua"
   new_path

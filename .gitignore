@@ -1,0 +1,5 @@
+bin/moonscript
+.vscode
+moonscript/**/*.lua
+spec/**/*.lua
+spec/outputs

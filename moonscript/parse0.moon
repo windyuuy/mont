@@ -28,8 +28,7 @@ Num = Space * (Num / (v) -> {"number", v})
 	:is_assignable, :check_assignable, :format_assign, :format_single_assign,
 	:sym, :symx, :simple_string, :wrap_func_arg, :join_chain,
 	:wrap_decorator, :check_lua_string, :self_assign, :conv_to_foreach, :build_exch_params,
-	:build_lazyfunc, :build_flowprocmap, :organize_switch_table,:got,
-	:trans_parens_exp
+	:build_lazyfunc, :build_flowprocmap, :organize_switch_table,:got
 } = require "moonscript.parse.util"
 
 build_grammar = wrap_env debug_grammar, (root) ->
@@ -112,8 +111,9 @@ build_grammar = wrap_env debug_grammar, (root) ->
 		Line: (CheckIndent * Statement + Space * L(Stop))
 
 		Statement: pos(
-				Import + While + With + For + ForEach + Switch + Return +
+				Import + While + With + For + ForEach + LoopArth + Switch + Return +
 				Local + Export + BreakLoop +
+				OpTableEle + OpTableTable +
 				Ct(ExpListTyped) * (Update + Assign)^-1 / format_assign
 			) * Space * ((
 				-- statement decorators
@@ -132,7 +132,7 @@ build_grammar = wrap_env debug_grammar, (root) ->
 
 		Local: key"local" * ((op"*" + op"^") / mark"declare_glob" + Ct(NameList) / mark"declare_with_shadows")
 
-		Import: key"import" * Ct(ImportNameList) * SpaceBreak^0 * key"from" * Exp / mark"import" + key"from" * Exp * key"import" * Ct(ImportName * (SpaceBreak^0 * sym"," * SpaceBreak^0 * ImportName)^0) / ((a,b)->(mark"import")(b,a))
+		Import: key"import" * Ct(ImportNameList) * SpaceBreak^0 * key"from" * Exp / mark"import"
 		ImportName: (sym"\\" * Ct(Cc"colon" * Name) + Name)
 		ImportNameList: SpaceBreak^0 * ImportName * ((SpaceBreak^1 + sym"," * SpaceBreak^0) * ImportName)^0
 
@@ -164,15 +164,12 @@ build_grammar = wrap_env debug_grammar, (root) ->
 
 		ArthParam: (sym"<" * (Num + Cc"2"/mark"ref") * sym">") + Cc"2"/mark"ref"
 		LoopArthForm: pos(
-			-- SimpleValue +
-			-- String +
+			SimpleValue +
 			Ct(KeyValueList) / mark"table" +
 			ChainValue +
-			Name
-			) * sym"^*" * Cc"toright" * ArthParam^-1 * Value
+			String) * sym"^*" * Cc"toright" * ArthParam^-1 * Value
 		SimpleLoopArth: Ct(LoopArthForm) / conv_to_foreach + Ct(sym"[" * LoopArthForm * sym"]" * Cc"pack") / conv_to_foreach
-		-- LoopArth: (#Name * #P"="^-1)^-1 * SimpleLoopArth
-		LoopArth: SimpleLoopArth
+		LoopArth: (#Name * #P"="^-1)^-1 * SimpleLoopArth
 		ForEach: key"for" * Ct(AssignableNameList) * key"in" * DisableDo * ensure(Ct(sym"*" * Exp / mark"unpack" + ExpList), PopDo) * key"do"^-1 * Body / mark"foreach"
 
 		Do: key"do" * Body / mark"do"
@@ -188,15 +185,13 @@ build_grammar = wrap_env debug_grammar, (root) ->
 
 		-- Assign: sym"=" * (Ct(With + If + Switch) + Ct(TableBlock + ExpListLow)) / mark"assign"
 		Assign: sym"=" * (Ct(With + If + Switch) + Ct(TableBlock + ExpListLowTyped)) / mark"assign"
-		Update: (UpdateOperators / trim) * Exp / mark"update"
-		UpdateOperators:(sym"..=" + sym"+=" + sym"-=" + sym"*=" + sym"/=" + sym"%=" + sym"or=" + sym"and=" + sym"&=" + sym"|=" + sym">>=" + sym"<<=")
+		Update: ((sym"..=" + sym"+=" + sym"-=" + sym"*=" + sym"/=" + sym"%=" + sym"or=" + sym"and=") / trim) * Exp / mark"update"
 
 		CharOperators: Space * C(S"+-*/%^><|&")
 		WordOperators: op"or" + op"and" + op"<=" + op">=" + op"~=" + op"!=" + op"==" + op".." + op"<<" + op">>" + op"//"
 		BinaryOperator: (WordOperators + CharOperators) * SpaceBreak^0
 
 		Assignable: Cmt(Chain, check_assignable) + Name + SelfName
-		ParensExp: sym"(" * Ct(White * BinaryOperator * White * Ct((Value * (SpaceBreak + Space)) ^ 1)) * sym")"/trans_parens_exp
 		Exp: Ct(Value * (BinaryOperator * Value)^0) / flatten_or_mark"exp"
 		-- CheckParam: C"(" * Statement * C")"
 		
@@ -213,7 +208,7 @@ build_grammar = wrap_env debug_grammar, (root) ->
 		TypeCheck: (P"~" * TypeName) + (P"~<" * TypeName) * (P"," * TypeName)^0 * P">"
 		DefaultTypeCatch: Ct(((C"~~<" + C":~<") * TypeName) * (C"," * TypeName)^0 * C">" + (C"~~" * TypeName))
 		TypeCatch: DefaultTypeCatch + Ct((C"~<" * TypeName) * (C"," * TypeName)^0 * C">" + (C"~" * TypeName))
-		ValueTyped: OpTableEle + OpTableTable + OpTableValues + Value + pos(Ct(Name * TypeCatch^-1))
+		ValueTyped: Value + pos(Ct(Name * TypeCatch^-1))
 		ExpTyped: Ct(ValueTyped * (BinaryOperator * ValueTyped)^0) / flatten_or_mark"exp"
 
 		MidTableLit: sym"[" * Ct(
@@ -223,10 +218,8 @@ build_grammar = wrap_env debug_grammar, (root) ->
 
 		RawCharOp: S"+-*/%^><|&"
 		DoubleOp: C(RawCharOp^2)
-		WExtOp: op"0+" + op"0-" + op">-" + op"0+=" + op"0-="
 		OpTableEle: Ct(Value * (DoubleOp + CharOperators) * P"[" * Ct(Value^-1) * P"]" * Value)/mark"opte"
 		OpTableTable: Ct(Value * C"[]" * (DoubleOp + CharOperators) * Value)/mark"optt"
-		OpTableValues: Ct(Value * P"[" * (C(UpdateOperators) + DoubleOp + CharOperators + WExtOp) * P"]" * Value)/mark"optv"
 		-- OpTableTable: Value * (DoubleOp + CharOperators) * MidTableLit * Value
 		-- OpTablePair: Value * Ct(C"[" * (DoubleOp + CharOperators) * "]") * Value
 		-- Statement0: Statement
@@ -248,15 +241,7 @@ build_grammar = wrap_env debug_grammar, (root) ->
 		ActiveAgs: Ct((ActiveAg^-1 * P",")^0 * ActiveAg)
 		ActiveAgsForm: (sym"<>" * Ct"" + sym"<" * (ActiveBriefAg^-1 * ActiveAgs^-1) * sym">") / build_exch_params
 		-- LazyFunc: Ct(pos(SimpleValue + ChainValue + Ct(KeyValueList) / mark"table") * ActiveAgsForm)
-		LazyFunc: Ct(pos(
-			-- LoopArth +
-			Ct(KeyValueList) / mark"table" +
-			P"(" * ChainValue * P")" +
-			SimpleValue +
-			-- ChainValue +
-			Name * (sym'.' * Name)^0
-			-- ChainValue
-		) * ActiveAgsForm)/build_lazyfunc
+		LazyFunc: Ct(pos(SimpleValue + ChainValue + Ct(KeyValueList) / mark"table" + LoopArth + String) * ActiveAgsForm)/build_lazyfunc
 		
 		FuncOp: S"^"
 		SubValue: Value
@@ -275,6 +260,7 @@ build_grammar = wrap_env debug_grammar, (root) ->
 			With +
 			ClassDecl +
 			ForEach + For + While +
+			-- LoopArth +
 			Cmt(Do, check_do) +
 			sym"-" * -SomeSpace * Exp / mark"minus" +
 			sym"#" * Exp / mark"length" +
@@ -284,7 +270,6 @@ build_grammar = wrap_env debug_grammar, (root) ->
 			TableLit +
 			Comprehension +
 			FlowProcMap +
-			ParensExp +
 			SwitchTable +
 			CloseFunLit +
 			FunLit +
@@ -294,13 +279,12 @@ build_grammar = wrap_env debug_grammar, (root) ->
 		ChainValue: (Chain + Callable) * Ct(InvokeArgs^-1) / join_chain
 
 		Value: pos(
+			LazyFunc +
 			SimpleValue +
 			Ct(KeyValueList) / mark"table" +
-			LazyFunc +
-			-- LoopArth +
 			ChainValue +
-			String
-			)
+			LoopArth +
+			String)
 
 		SliceValue: Exp
 
@@ -396,7 +380,7 @@ build_grammar = wrap_env debug_grammar, (root) ->
 			
 		CloseFnArgsDef: (sym"<") * Ct(FnArgDefList^-1) *
 			(key"using" * Ct(NameList + Space * "nil") + Ct"") *
-			(sym">") + sym"|"*Ct""*Ct""-- + Ct"" * Ct""
+			(sym">") + Ct"" * Ct""
 			
 		CloseFunLit: sym"^"^-1 * sym"{" * White * CloseFnArgsDef *
 			(Cc"slim") *

@@ -1,0 +1,1 @@
+@cd .. && call rebuild.bat && cd bin && call build_moon.bat %1.moon

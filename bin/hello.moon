@@ -1,0 +1,1 @@
+table.sort(unitsinfo,table.hh,table.icountEleOF<,$2:tonumber,...>)

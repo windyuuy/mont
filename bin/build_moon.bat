@@ -1,0 +1,1 @@
+@lua -e "package.path='D:/PCOM/lua-5.1.5/local/moonscript/?.lua;'..package.path" D:\PCOM\lua-5.1.5\local\moonscript\bin\moonc %*

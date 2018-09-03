@@ -26,11 +26,11 @@ class Stack
 
 
 lua_keywords = Set {
-	'and', 'break', 'do', 'else', 'elseif',
-	'end', 'false', 'for', 'function', 'if',
-	'in', 'local', 'nil', 'not', 'or',
-	'repeat', 'return', 'then', 'true',
-	'until', 'while'
+  'and', 'break', 'do', 'else', 'elseif',
+  'end', 'false', 'for', 'function', 'if',
+  'in', 'local', 'nil', 'not', 'or',
+  'repeat', 'return', 'then', 'true',
+  'until', 'while'
 }
 
 { :Set, :Stack, :lua_keywords }

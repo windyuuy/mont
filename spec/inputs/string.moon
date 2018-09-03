@@ -40,6 +40,9 @@ b = "#{hello} hello"
 c = "hello #{5+1}"
 d = "#{hello world}"
 e = "#{1} #{2} #{3}"
+effff = "#{1}#{2}#{3}"
+
+fwsf="#{concat kjlkwj}"
 
 f = [[hello #{world} world]]
 

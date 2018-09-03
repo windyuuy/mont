@@ -58,7 +58,7 @@ dump = (what) ->
   _dump = (what, depth=0) ->
     t = type what
     if t == "string"
-			'"'..what..'"\n'
+      '"'..what..'"\n'
     elseif t == "table"
       if seen[what]
         return "recursion("..tostring(what) ..")...\n"

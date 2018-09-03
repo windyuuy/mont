@@ -10,7 +10,7 @@ wrap_env = (debug, fn) ->
 
   if debug
     indent = 0
-    indent_char = "  "
+    indent_char = "\t"
 
     iprint = (...) ->
       args = table.concat [tostring a for a in *{...}], ", "
