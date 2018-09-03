@@ -288,7 +288,7 @@ t.^*.t1 -- f v for v in t for f in t1
 ([[.^*].] t t1)
 v^*.t -- f v for f in t
 f*.f2*.t -- 
-<~f1,f2,f3> -- ((...)->f1 f2 f3(...))
+<~f1^f2^f3> -- ((...)->f1 f2 f3(...))
 
 t^ipairs.^f -- f(x1,x2) for x1,x2 in ipairs(t)
 t^ipairs.^f.^f2 -- f(x3,x4) for x3,x4 in f(x1,x2) for x1,x2 in ipairs(t)
